@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreTaskRequest;
 use App\Models\Task;
 use App\Models\TaskUser;
-use Illuminate\Http\Request;
 
 class TaskController extends Controller
 {
@@ -16,7 +16,7 @@ class TaskController extends Controller
         return response()->json($tasks, 200);
     }
 
-    public function store(Request $request)
+    public function store(StoreTaskRequest $request)
     {
         $task = Task::create([
             'title' => $request->title,
