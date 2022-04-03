@@ -5,8 +5,12 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
+use App\Http\Resources\LoginUserResource;
+use App\Http\Resources\LogoutUserResource;
+use App\Http\Resources\RegisterUserResource;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Response;
 
 class AuthController extends Controller
 {
@@ -19,42 +23,28 @@ class AuthController extends Controller
         ]);
 
         $token = $user->createToken('myapptoken')->accessToken;
-
-        $response = [
-            'user' => $user,
-            'token' => $token,
-            'message' => 'User has been registered'
-        ];
-
-        return response()->json($response,201);
-
+        $user->token = $token;
+  
+        return new RegisterUserResource($user);
     }
 
     public function login(LoginRequest $request){
 
         $user = User::where('username' , $request->username)->first();
 
-        if(!$user || !Hash::check($request->password , $user->password)){
-            return response([
-                'message' => 'user not found!'
-            ], 401);
-        }
+        if(!$user || !Hash::check($request->password , $user->password))
+            return Response::error('user not found.' , 401);
 
         $token = $user->createToken('myapptoken')->accessToken;
+        $user->token = $token;
 
-        $response = [
-            'user' => $user,
-            'token' => $token,
-            'message' => 'User has logged in'
-        ];
-
-        return response()->json($response,200);
+        return new LoginUserResource($user);
     }
     
     public function logout(){
         auth()->user()->tokens()->delete();
 
-        return response()->json(['message' => 'User has logged out'],200);
+        return new LogoutUserResource(auth()->user());
     }
 
 

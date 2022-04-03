@@ -4,8 +4,12 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTaskRequest;
+use App\Http\Resources\DeleteTaskResource;
+use App\Http\Resources\StoreTaskResource;
+use App\Http\Resources\TaskResource;
 use App\Models\Task;
 use App\Models\TaskUser;
+use Illuminate\Support\Facades\Response;
 
 class TaskController extends Controller
 {
@@ -13,7 +17,7 @@ class TaskController extends Controller
     {
         $tasks = auth()->user()->tasks;
 
-        return response()->json($tasks, 200);
+        return TaskResource::collection($tasks);
     }
 
     public function store(StoreTaskRequest $request)
@@ -27,15 +31,17 @@ class TaskController extends Controller
             'user_id' => auth()->user()->id,
             'task_id' => $task->id
         ]);
+
+        return new StoreTaskResource($task);
     }
 
     public function destroy($id)
     {
         $task = TaskUser::where('user_id', auth()->user()->id)->where('task_id' , $id)->first();
         if($task === null)
-            return 'nothing to delete';    
-        $task->delete();
-        return 'deleted';
+            return Response::error('there is nothing to delete.' , 404);
+        Task::destroy($id);
+        return new DeleteTaskResource($task);
         
     }
 }

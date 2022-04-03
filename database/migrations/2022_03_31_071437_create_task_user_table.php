@@ -31,7 +31,7 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::table('task_user', function (Blueprint $table) {
+        Schema::create('task_user', function (Blueprint $table) {
             //
         });
     }
